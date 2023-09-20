@@ -1,8 +1,9 @@
-#include "include/CPU.h"
-#include "include/Memory.h"
-#include "include/Console.h"
+#include "../include/CPU.h"
+#include "../include/Console.h"
 #include <iostream>
 
+
+class RenderWindow;
 
 int main() {
     // 400 byte console map
@@ -13,9 +14,10 @@ int main() {
     CPU cpu = CPU();
     Memory mem = Memory();
     cpu.reset(mem);
-
+    int c = 65;
     for(int i = CONSOLE_MAP_START; i < CONSOLE_MAP_END; i+=4) {
-        mem.DEV_storeWord(i, 72);
+        mem.DEV_storeWord(i, c);
+        c++;
     }
 
     mem.DEV_storeWord(0x1110,0xA); // load array starting at 0x1110
@@ -42,7 +44,6 @@ int main() {
         console.print(mem);
         //cpu.DEV_printReg();
     }
-    return 0;
 
     return 0;
 }

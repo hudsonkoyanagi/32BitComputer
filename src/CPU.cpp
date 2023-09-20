@@ -14,7 +14,6 @@ Word CPU::instrToWord(Word instr, Word mask, int shift) {
     return (instr & mask) >> shift;
 }
 
-
 void CPU::reset(Memory& mem) {
     SP = 0x1000;
     PC = 0x1004;
@@ -83,7 +82,18 @@ void CPU::ALU_OP(Byte opCode, Word instr) {
         case INS_DIV:
             registers[rd] = a/b;
             break;
-            // TODO: LSL, LSR, ASR
+        case INS_LSL:
+            registers[rd] = a << b;
+            break;
+        case INS_LSR:
+            registers[rd] = a >> b;
+            break;
+        case INS_ASR:
+            registers[rd] = (Word)((int)a >> (int)b);
+            break;
+        default:
+            std::cout << "Unknown ALU instruction: " << std::hex << opCode << "\n";
+            exit(1);
     }
 
 }
@@ -139,8 +149,6 @@ void CPU::execute(Memory& mem) {
             break;
         }
         case INS_JMP: {
-
-
             const Byte link = instrToByte(IR, JMP_LNK_MASK, 23);
             const Byte rgd = instrToByte(IR, JMP_RGD_MASK, 20);
             const Word offset = instrToWord(IR, JMP_OFF_MASK, 0);
