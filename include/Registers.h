@@ -6,6 +6,8 @@
 #define INC_32BITCOMPUTER_REGISTERS_H
 #include "definitions.h"
 
+// Wrapper for an array of 8 words
+
 class Registers {
 public:
     Word& operator[](uint8_t reg);

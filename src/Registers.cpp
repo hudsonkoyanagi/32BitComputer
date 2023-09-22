@@ -3,7 +3,6 @@
 //
 
 #include "../include/Registers.h"
-#include "../include/definitions.h"
 #include <cassert>
 
 Word& Registers::operator[](uint8_t reg) {

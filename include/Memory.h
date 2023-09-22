@@ -5,10 +5,12 @@
 #ifndef INC_32BITCOMPUTER_MEMORY_H
 #define INC_32BITCOMPUTER_MEMORY_H
 #include "definitions.h"
+#include "settings.h"
+// Wrapper for a MEM_SIZE byte array with helper functions
 
 class Memory {
 public:
-    static constexpr unsigned int MEM_SIZE = 256* 256; // 2^16 limit to not abuse memory
+
     Byte operator[](Word addr);
 
     // addr: initial offset

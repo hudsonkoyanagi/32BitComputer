@@ -16,8 +16,6 @@ int main() {
     cpu.reset(mem);
 
 
-    cpu.setFlags(0,1,1,0);
-
     int CYCLES = 8;
     bool DEBUG = true;
 

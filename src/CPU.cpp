@@ -76,25 +76,25 @@ void CPU::ALU_OP(Byte opCode, Word instr) {
     switch(opCode) {
         case INS_AND:
 
-            registers[rd] = a&b;
+            registers[rd] = a & b;
             break;
         case INS_ORR:
-            registers[rd] = a|b;
+            registers[rd] = a | b;
             break;
         case INS_XOR:
-            registers[rd] = a^b;
+            registers[rd] = a ^ b;
             break;
         case INS_ADD:
-            registers[rd] = a+b;
+            registers[rd] = a + b;
             break;
         case INS_SUB:
-            registers[rd] = a-b;
+            registers[rd] = a - b;
             break;
         case INS_MLT:
-            registers[rd] = a*b;
+            registers[rd] = a * b;
             break;
         case INS_DIV:
-            registers[rd] = a/b;
+            registers[rd] = a / b;
             break;
         case INS_LSL:
             registers[rd] = a << b;
@@ -103,13 +103,17 @@ void CPU::ALU_OP(Byte opCode, Word instr) {
             registers[rd] = a >> b;
             break;
         case INS_ASR:
-            registers[rd] = (Word)((int)a >> (int)b);
+            registers[rd] = (Word) ((int) a >> (int) b);
             break;
         default:
             std::cout << "Unknown ALU instruction: " << std::hex << opCode << "\n";
-            exit(1);
+            exit(1); // TODO: check if this causes mem leak
+            break;
     }
-
+    if(sf) {
+        Z = registers[rd] == 0;
+        N = registers[rd] < 0;
+    }
 }
 
 // Executes instruction in IR
@@ -173,6 +177,14 @@ void CPU::execute(Memory& mem, bool debug) {
             const Word offset = instrToWord(IR, JMP_OFF_MASK, 0);
             const Byte fun = instrToByte(IR, JMP_FUN_MASK, 19);
             const Byte cond = instrToByte(IR, JMP_CND_MASK, 12);
+            switch(cond) {
+                case(0): {
+                    break;
+                }
+                case(1): {
+
+                }
+            }
 
             if(link) {
                 LR = PC;
@@ -183,7 +195,7 @@ void CPU::execute(Memory& mem, bool debug) {
                 PC = registers[rgd] + offset;
             } else{
                 printf("Not valid JMP function %d: \n", fun);
-                exit(EXIT_FAILURE);
+                exit(EXIT_FAILURE); // check if this causes memory leak
             }
         }
         case INS_RET: {
