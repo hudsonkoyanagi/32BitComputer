@@ -29,6 +29,7 @@ void Memory::clear() {
     for(Byte& b : data) b = 0;
 }
 
+
 Word Memory::retrieveBySize(Word addr, uint8_t size) {
     assert(size <= 4);
     if(size == 0) size++;

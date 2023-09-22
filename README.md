@@ -11,6 +11,7 @@ Stack Pointer (SP)
 32 bit data bus / word size  
 32 bit address bus  
 
+Flags: C, V, N, Z
 
 ## ALU Operations
 ___
@@ -79,10 +80,35 @@ Variants:
 ## Control Flow
 
 ### JMP #13, 0x0D  
-Set PC to specified address with option to link
+Set PC to specified address with option to set LR to current PC.  
 Variants:
 * JMP{L} Rd  
-0000 1101 L ddd 0 ZZZ ZZZZ ZZZZ ZZZZ zZZZZ
-* JMP{L} Rd, off16  
-0000 1101 L ddd 1 ZZZ iiii iiii iiii iiii
+0000 1101 L ddd 0 ZZZ COND ZZZZ ZZZZ zZZZZ
+* JMP{L} Rd, off12  
+0000 1101 L ddd 1 ZZZ COND iiii iiii iiii
 
+Conditions (COND):  
+* 0000: JMP  
+*Direct Flag Checks*:  
+* 0001: JZE : Z = 1
+* 0010: JNZ : Z = 0
+* 0011: JNS : N = 1
+* 0100: JCS : C = 1
+* 0101: JVS : V = 1
+* 0110: 
+* 0111:   
+*Signed*:    
+* 1000: JGT : Z = 0 & N = V
+* 1001: JLT : N != V
+* 1010: JGE : N = V
+* 1011: JLE : Z = 1 | N != V  
+*Unsigned*:    
+* 1100: JHI : C = 1 & Z = 0
+* 1101: JLO : C = 0
+* 1110: JHE : C = 1
+* 1111: JLE : C = 0 OR Z = 1
+
+### RET #14, 0x0E
+Return from subroutine by jumping to address in JR (does not clear JR)  
+
+0000 1110 ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ

@@ -23,4 +23,6 @@ static constexpr Byte INS_STR = 0x0C;
 
 static constexpr Byte INS_JMP = 0x0D;
 
+static constexpr Byte INS_RET = 0x0E;
+
 #endif //INC_32BITCOMPUTER_OPCODES_H

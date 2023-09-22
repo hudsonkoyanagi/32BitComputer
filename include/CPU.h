@@ -11,11 +11,9 @@
 class CPU {
 public:
     void reset(Memory& mem);
-    void fetch(Memory& mem);
-    void execute(Memory& mem);
-
-
-
+    void fetch(Memory& mem, bool debug = false);
+    void execute(Memory& mem, bool debug = false);
+    void setFlags(bool c, bool z, bool n, bool v);
     void DEV_printReg();
 
 private:
@@ -26,10 +24,10 @@ private:
     Word IR;
     Word LR;
 
-    Byte C : 1;
-    Byte Z : 1;
-    Byte N : 1;
-    Byte O: 1;
+    bool C = false;
+    bool Z = false;
+    bool N = false;
+    bool V = false;
     static Byte instrToByte(Word instr, Word mask, int shift);
     static Word instrToWord(Word instr, Word mask, int shift);
     void ALU_OP(Byte opCode, Word instr);

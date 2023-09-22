@@ -20,24 +20,37 @@ void CPU::reset(Memory& mem) {
     IR = 0;
     LR = 0;
 
-    C = Z = N = O = 0;
+    C = Z = N = V = false; // carry, zero, negative, overflow
     registers.clearAll();
     mem.clear();
 }
 
+void CPU::setFlags(bool c, bool z, bool n, bool v) {
+    this->C = c;
+    this->Z = z;
+    this->N = n;
+    this->V = v;
+}
+
 // loads word pointed to by PC into IR
 // increments PC (by 4)
-void CPU::fetch(Memory& mem) {
+void CPU::fetch(Memory& mem, bool debug) {
+
     Word instr = mem[PC] << 24;
     instr += mem[PC+1] << 16;
     instr += mem[PC+2] << 8;
     instr += mem[PC+3];
+
+    if(debug) {
+        std::cout << "Fetched " << std::hex << instr  << " from " << PC << std::endl;
+    }
+
     IR = instr;
-    PC+=4;
+    PC+=4; // TODO handle over run
 }
 
+// TODO: set flags
 void CPU::ALU_OP(Byte opCode, Word instr) {
-    Byte op = instrToByte(instr, ALU_OP_MASK, 24);
     Byte fn = instrToByte(instr, ALU_FN_MASK, 22);
     Byte sf = instrToByte(instr,ALU_S_MASK, 21);
     Byte rd = instrToByte(instr,ALU_RD_MASK, 18);
@@ -62,6 +75,7 @@ void CPU::ALU_OP(Byte opCode, Word instr) {
 
     switch(opCode) {
         case INS_AND:
+
             registers[rd] = a&b;
             break;
         case INS_ORR:
@@ -98,8 +112,11 @@ void CPU::ALU_OP(Byte opCode, Word instr) {
 
 }
 
-void CPU::execute(Memory& mem) {
-    std::cout << "Executing instruction: " << std::hex << IR << std::endl;
+// Executes instruction in IR
+void CPU::execute(Memory& mem, bool debug) {
+    if(debug) {
+        std::cout << "Executing instruction: " << std::hex << IR << std::endl;
+    }
     Byte opCode = instrToByte(IR, OP_CODE_MASK, 24);
     if(opCode <= INS_ASR){
         ALU_OP(opCode, IR);
@@ -148,11 +165,14 @@ void CPU::execute(Memory& mem) {
             }
             break;
         }
+
         case INS_JMP: {
+
             const Byte link = instrToByte(IR, JMP_LNK_MASK, 23);
             const Byte rgd = instrToByte(IR, JMP_RGD_MASK, 20);
             const Word offset = instrToWord(IR, JMP_OFF_MASK, 0);
             const Byte fun = instrToByte(IR, JMP_FUN_MASK, 19);
+            const Byte cond = instrToByte(IR, JMP_CND_MASK, 12);
 
             if(link) {
                 LR = PC;
@@ -160,11 +180,15 @@ void CPU::execute(Memory& mem) {
             if(fun == 0) {
                 PC = registers[rgd];
             } else if(fun == 1) {
-                PC += offset;
+                PC = registers[rgd] + offset;
             } else{
                 printf("Not valid JMP function %d: \n", fun);
                 exit(EXIT_FAILURE);
             }
+        }
+        case INS_RET: {
+            PC = LR;
+            break;
         }
         default:
             std::cout << "Unknown instruction: " << std::hex << opCode << "\n";
@@ -172,11 +196,14 @@ void CPU::execute(Memory& mem) {
     }
 }
 
+// Only prints registers with non-zero vals
 void CPU::DEV_printReg() {
     std::cout << "PC: " << std::hex << PC << std::endl;
     std::cout << "SP: " << std::hex << SP << std::endl;
     std::cout << "IR: " << std::hex << IR << std::endl;
+    std::cout <<  "C:" << C << " Z:" << Z << " N:" <<  N << " V:" << V << std::endl;
     for(int i = 0; i < 8; i++){
-        std::cout << "R" << i << ": " << std::hex << registers[i] << std::endl;
+        if(registers[i])
+            std::cout << "R" << i << ": " << std::hex << registers[i] << std::endl;
     }
 }

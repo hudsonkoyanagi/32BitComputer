@@ -28,7 +28,7 @@ const Word JMP_LNK_MASK = 0x00800000;
 const Word JMP_RGD_MASK = 0x00700000;
 const Word JMP_OFF_MASK = 0x0000FFFF;
 const Word JMP_FUN_MASK = 0x00080000;
-
+const Word JMP_CND_MASK = 0x0000F000;
 
 const Word ALU_OP_MASK = 0xFF000000;
 const Word ALU_FN_MASK = 0x00C00000;
