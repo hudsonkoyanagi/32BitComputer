@@ -23,6 +23,8 @@ add_executable(32BitComputer src/main.cpp
         include/masks.h
         include/opcodes.h
         include/settings.h
+        src/utils.cpp
+        include/utils.h
 )
 
 target_link_libraries(32BitComputer sfml-graphics sfml-window sfml-system)

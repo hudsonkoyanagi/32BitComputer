@@ -6,20 +6,22 @@
 #include <iostream>
 #include "../include/masks.h"
 #include "../include/opcodes.h"
+#include "../include/utils.h"
 
-Byte CPU::instrToByte(Word instr, Word mask, int shift) {
-    return (instr & mask) >> shift;
-}
-Word CPU::instrToWord(Word instr, Word mask, int shift) {
-    return (instr & mask) >> shift;
+CPU::CPU() {
+    this->reset();
 }
 
-void CPU::reset(Memory& mem) {
-    SP = 0x1000;
-    PC = 0x1004;
-    IR = 0;
-    LR = 0;
+void CPU::reset(Word stackBase) {
+    SP = stackBase;
+    PC = IR = LR = 0;
+    C = Z = N = V = false; // carry, zero, negative, overflow
+    registers.clearAll();
+}
 
+void CPU::reset(Memory& mem, Word stackBase) {
+    SP = stackBase;
+    SP = PC = IR = LR = 0;
     C = Z = N = V = false; // carry, zero, negative, overflow
     registers.clearAll();
     mem.clear();
@@ -50,11 +52,11 @@ void CPU::fetch(Memory& mem, bool debug) {
 }
 
 // TODO: set flags
-void CPU::ALU_OP(Byte opCode, Word instr) {
-    Byte fn = instrToByte(instr, ALU_FN_MASK, 22);
-    Byte sf = instrToByte(instr,ALU_S_MASK, 21);
-    Byte rd = instrToByte(instr,ALU_RD_MASK, 18);
-    Byte rs1 = instrToByte(instr, ALU_RS1_MASK, 15);
+void CPU::U_ALU_OP(Byte opCode, Word instr) {
+    Byte fn = kutils::instrToByte(instr, ALU_FN_MASK, 22);
+    Byte sf = kutils::instrToByte(instr,ALU_S_MASK, 21);
+    Byte rd = kutils::instrToByte(instr,ALU_RD_MASK, 18);
+    Byte rs1 = kutils::instrToByte(instr, ALU_RS1_MASK, 15);
     Word a;
     Word b;
 
@@ -62,48 +64,92 @@ void CPU::ALU_OP(Byte opCode, Word instr) {
         a = registers[rd];
         b = registers[rs1];
     } else if (fn == 1) {
-        Byte rs12 = instrToByte(instr, ALU_RS2_MASK, 12);
+        Byte rs12 = kutils::instrToByte(instr, ALU_RS2_MASK, 12);
         a = registers[rs1];
         b = registers[rs12];
     } else if (fn == 2) {
         a = registers[rd];
-        b = instrToWord(instr, ALU_I16_MASK, 0);
+        b = kutils::instrToWord(instr, ALU_I16_MASK);
     } else {
         a = registers[rs1];
-        b = instrToWord(instr, ALU_I12_MASK, 0);
+        b = kutils::instrToWord(instr, ALU_I12_MASK);
     }
+
+    Word result;
 
     switch(opCode) {
         case INS_AND:
-
-            registers[rd] = a & b;
+            if(sf) {
+                C = false;
+                V = false;
+            }
+            result = a & b;
             break;
         case INS_ORR:
-            registers[rd] = a | b;
+            if(sf) {
+                C = false;
+                V = false;
+            }
+            result = a | b;
             break;
         case INS_XOR:
-            registers[rd] = a ^ b;
+            if(sf) {
+                C = false;
+                V = false;
+            }
+            result = a ^ b;
             break;
         case INS_ADD:
-            registers[rd] = a + b;
+
+            if(sf) {
+                uint64_t u_sum = (uint64_t) a + (uint64_t) b;
+                int64_t i_sum = (int)u_sum;
+                int signed_a = (int) a;
+                int signed_b = (int) b;
+                C = u_sum > 0xFFFFFFFF;
+                // parity check instead of MSB check
+                V = (signed_a > 0 && signed_b > 0 && i_sum < 0) || (signed_a < 0 && signed_b < 0 && i_sum > 0);
+            }
+            result = a + b;
             break;
         case INS_SUB:
-            registers[rd] = a - b;
+            if(sf) {
+
+            }
+            result = a - b;
             break;
         case INS_MLT:
-            registers[rd] = a * b;
+            if(sf) {
+
+            }
+            result = a * b;
             break;
         case INS_DIV:
-            registers[rd] = a / b;
+            if(sf) {
+
+            }
+            result = a / b;
             break;
         case INS_LSL:
-            registers[rd] = a << b;
+            if(sf) {
+                C = false;
+                V = false;
+            }
+            result = a << b;
             break;
         case INS_LSR:
-            registers[rd] = a >> b;
+            if(sf) {
+                C = false;
+                V = false;
+            }
+            result = a >> b;
             break;
         case INS_ASR:
-            registers[rd] = (Word) ((int) a >> (int) b);
+            if(sf) {
+                C = (a >> 31) & 1; // carry = bit shifted out
+                V = false;
+            }
+            result = (Word) ((int) a >> (int) b);
             break;
         default:
             std::cout << "Unknown ALU instruction: " << std::hex << opCode << "\n";
@@ -111,9 +157,11 @@ void CPU::ALU_OP(Byte opCode, Word instr) {
             break;
     }
     if(sf) {
-        Z = registers[rd] == 0;
-        N = registers[rd] < 0;
+        Z = result == 0;
+        N = (result >> 31) & 1; // check msb for negative
     }
+
+    registers[rd] = result;
 }
 
 // Executes instruction in IR
@@ -121,35 +169,35 @@ void CPU::execute(Memory& mem, bool debug) {
     if(debug) {
         std::cout << "Executing instruction: " << std::hex << IR << std::endl;
     }
-    Byte opCode = instrToByte(IR, OP_CODE_MASK, 24);
+    Byte opCode = kutils::instrToByte(IR, OP_CODE_MASK, 24);
     if(opCode <= INS_ASR){
-        ALU_OP(opCode, IR);
+        U_ALU_OP(opCode, IR);
         return;
     }
 
     switch(opCode){
         case INS_MOV: {
-            const Byte fun = instrToByte(IR, MOV_FUN_MASK, 23);
-            const Byte rgd = instrToByte(IR, MOV_RGD_MASK, 20);
+            const Byte fun = kutils::instrToByte(IR, MOV_FUN_MASK, 23);
+            const Byte rgd = kutils::instrToByte(IR, MOV_RGD_MASK, 20);
             if (fun == 0) {
-                const Byte rgs = instrToByte(IR, MOV_RGS_MASK, 16);
+                const Byte rgs = kutils::instrToByte(IR, MOV_RGS_MASK, 16);
                 registers[rgd] = registers[rgs];
             } else {
-                const Word imm = instrToWord(IR, MOV_IMM_MASK, 0);
+                const Word imm = kutils::instrToWord(IR, MOV_IMM_MASK);
                 registers[rgd] = imm;
             }
             break;
         }
         case INS_LDR: {
-            const Byte func = instrToByte(IR, LDR_FUN_MASK, 23);
-            const Byte type = instrToByte(IR, LDR_TYP_MASK, 16);
-            const Byte rgd = instrToByte(IR, LDR_RGD_MASK, 20);
-            const Byte rgs = instrToByte(IR, LDR_RSD_MASK, 12);
+            const Byte func = kutils::instrToByte(IR, LDR_FUN_MASK, 23);
+            const Byte type = kutils::instrToByte(IR, LDR_TYP_MASK, 16);
+            const Byte rgd = kutils::instrToByte(IR, LDR_RGD_MASK, 20);
+            const Byte rgs = kutils::instrToByte(IR, LDR_RSD_MASK, 12);
             //Multiplies type by two to get byte size, 2 = Word, 1 = Half Word,( 0 = Byte handled in function)
             if(func == 0) {
                 registers[rgd] = mem.retrieveBySize(registers[rgs], type*2);
             } else {
-                Word offset = instrToWord(IR, LDR_I12_MASK, 0);
+                Word offset = kutils::instrToWord(IR, LDR_I12_MASK);
                 registers[rgd] = mem.retrieveBySize(registers[rgs]+offset, type*2);
             }
             break;
@@ -157,26 +205,26 @@ void CPU::execute(Memory& mem, bool debug) {
         case INS_STR : {
             // Type not implemented for now, since registers are Words
             // simpler this way for now
-            const Byte func = instrToByte(IR, LDR_FUN_MASK, 23);
-            // const Byte type = instrToByte(IR, LDR_TYP_MASK, 16);
-            const Byte rgd = instrToByte(IR, LDR_RGD_MASK, 20);
-            const Byte rgs = instrToByte(IR, LDR_RSD_MASK, 12);
+            const Byte func = kutils::instrToByte(IR, LDR_FUN_MASK, 23);
+            // const Byte type = kutils::instrToByte(IR, LDR_TYP_MASK, 16);
+            const Byte rgd = kutils::instrToByte(IR, LDR_RGD_MASK, 20);
+            const Byte rgs = kutils::instrToByte(IR, LDR_RSD_MASK, 12);
             if(func == 0) {
                 mem.storeWord(registers[rgs], registers[rgd]);
             } else {
-                Word offset = instrToWord(IR, LDR_I16_MASK, 0);
+                Word offset = kutils::instrToWord(IR, LDR_I16_MASK);
                 mem.storeWord(registers[rgs]+offset, registers[rgd]);
             }
             break;
         }
-
+        // TODO: implement conditional jmps
         case INS_JMP: {
 
-            const Byte link = instrToByte(IR, JMP_LNK_MASK, 23);
-            const Byte rgd = instrToByte(IR, JMP_RGD_MASK, 20);
-            const Word offset = instrToWord(IR, JMP_OFF_MASK, 0);
-            const Byte fun = instrToByte(IR, JMP_FUN_MASK, 19);
-            const Byte cond = instrToByte(IR, JMP_CND_MASK, 12);
+            const Byte link = kutils::instrToByte(IR, JMP_LNK_MASK, 23);
+            const Byte rgd = kutils::instrToByte(IR, JMP_RGD_MASK, 20);
+            const Word offset = kutils::instrToWord(IR, JMP_OFF_MASK);
+            const Byte fun = kutils::instrToByte(IR, JMP_FUN_MASK, 19);
+            const Byte cond = kutils::instrToByte(IR, JMP_CND_MASK, 12);
             switch(cond) {
                 case(0): {
                     break;
@@ -201,6 +249,12 @@ void CPU::execute(Memory& mem, bool debug) {
         case INS_RET: {
             PC = LR;
             break;
+        }
+        case INS_POP: {
+
+        }
+        case INS_PUSH: {
+
         }
         default:
             std::cout << "Unknown instruction: " << std::hex << opCode << "\n";

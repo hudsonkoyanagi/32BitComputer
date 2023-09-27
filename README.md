@@ -1,9 +1,11 @@
 For time being, store instructions manually using the DEV insert and update cycle count for number of instructions.
-
+Memory size can be modified in include/settings.h
 ##  "Hardware"
 ___
+
+
 8 general purpose registers (R0-R7)  
-Instruciton Register (IR)  
+Instruction Register (IR)  
 Program Counter (PC)  
 Link Register (LR)   
 Stack Pointer (SP)
@@ -12,6 +14,8 @@ Stack Pointer (SP)
 32 bit address bus
 
 Flags: C, V, N, Z
+
+PC starts at 0x1000
 
 ## ALU Operations
 ___
@@ -33,16 +37,16 @@ Functions:
 * Rd, imm (0b10)
 * Rd, Rs, imm (0b11)
 
-< op>{S} Rd, Rs  
+< op>{S} Rd, Rs  (Rd += Rs)
 0000 0000   00   S   ddd   sss  ZZZ ZZZZ ZZZZ ZZZZ
 
-< op>{S} Rd, Rs, Rs  
+< op>{S} Rd, Rs, Rs  (Rd = Rs + Rs
 0000 0000   01   S   ddd   sss  sss ZZZZ ZZZZ ZZZZ
 
-< op>{S} Rd, imm16     
+< op>{S} Rd, imm16 (Rd += imm16)
 0000 0000   10   S   ddd   ZZ   iiii iiii iiii iiii 
 
-< op>{S} Rd, Rs, imm12 | Rd = Rs + imm12  
+< op>{S} Rd, Rs, imm12 ( Rd = Rs + imm12 )  
 0000 0000   11   S   ddd   sss  ZZZ iiii iiii iiii
 ## Data Movement
 ___
@@ -112,3 +116,11 @@ Conditions (COND):
 Return from subroutine by jumping to address in JR (does not clear JR)
 
 0000 1110 ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ
+
+### PUSH #16, 0x10
+Push a value onto stack and increment SP
+
+0001 0000 Z ddd   
+
+### POP #17, 0x11
+Returns value from stack and decrements SP

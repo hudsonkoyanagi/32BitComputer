@@ -1,5 +1,6 @@
 #include "../include/CPU.h"
 #include "../include/Console.h"
+#include "../include/utils.h"
 #include <iostream>
 
 
@@ -13,11 +14,14 @@ int main() {
 
     CPU cpu = CPU();
     Memory mem = Memory();
-    cpu.reset(mem);
+    cpu.reset(mem, 0x0FFF);
+    cpu.registers[1] = UINT32_MAX;
+    mem.DEV_storeWord(0x1008, 0b00000101101001000000000000011111);
 
 
-    int CYCLES = 8;
-    bool DEBUG = true;
+
+    int CYCLES = 4;
+    bool DEBUG = true; // change to macro def or move to settings
 
     for(int i = 0; i < CYCLES; i++) {
         if(DEBUG) {
@@ -27,6 +31,11 @@ int main() {
         cpu.fetch(mem, DEBUG);
         cpu.execute(mem, DEBUG);
         if(DEBUG) std::cout << "\n";
+    }
+
+    uint32_t a = 0b11111111111111111111111111111111;
+    if(kutils::is_MSb(a)){
+        std::cout << "YPYO\n";
     }
 
     return 0;

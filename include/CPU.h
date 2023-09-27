@@ -10,14 +10,17 @@
 
 class CPU {
 public:
-    void reset(Memory& mem);
+    CPU();
+    void reset(Word stackBase);
+    void reset(Memory& mem, Word stackBase);
     void fetch(Memory& mem, bool debug = false);
     void execute(Memory& mem, bool debug = false);
     void setFlags(bool c, bool z, bool n, bool v);
     void DEV_printReg();
+    Registers registers;
 
 private:
-    Registers registers;
+
 
     Word PC;
     Word SP;
@@ -28,9 +31,8 @@ private:
     bool Z = false;
     bool N = false;
     bool V = false;
-    static Byte instrToByte(Word instr, Word mask, int shift);
-    static Word instrToWord(Word instr, Word mask, int shift);
-    void ALU_OP(Byte opCode, Word instr);
+
+    void U_ALU_OP(Byte opCode, Word instr);
 };
 
 
