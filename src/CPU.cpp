@@ -9,7 +9,7 @@
 #include "../include/utils.h"
 
 CPU::CPU() {
-    this->reset();
+    this->reset(0);
 }
 
 void CPU::reset(Word stackBase) {
@@ -164,6 +164,16 @@ void CPU::U_ALU_OP(Byte opCode, Word instr) {
     registers[rd] = result;
 }
 
+std::vector<int> extractRegistersFromBitmask(HalfWord bitmask) {
+    std::vector<int> registers;
+    for (int i = 0; i < 16; ++i) {
+        if (bitmask & (1 << i)) {
+            registers.push_back(i);
+        }
+    }
+    return registers;
+}
+
 // Executes instruction in IR
 void CPU::execute(Memory& mem, bool debug) {
     if(debug) {
@@ -251,10 +261,20 @@ void CPU::execute(Memory& mem, bool debug) {
             break;
         }
         case INS_POP: {
+            std::vector<int> regToPop = extractRegistersFromBitmask((HalfWord)IR);
+            for(int reg : regToPop) {
+                SP -= 4;  // empty ascending stack
+                registers[reg] = mem[SP];
 
+            }
         }
         case INS_PUSH: {
+            std::vector<int> regToPush = extractRegistersFromBitmask((HalfWord)IR);
+            for(int reg : regToPush) {
 
+                mem.storeWord(SP, registers[reg]);
+                SP += 4; // empty ascending stack
+            }
         }
         default:
             std::cout << "Unknown instruction: " << std::hex << opCode << "\n";

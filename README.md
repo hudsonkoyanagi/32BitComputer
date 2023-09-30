@@ -117,10 +117,19 @@ Return from subroutine by jumping to address in JR (does not clear JR)
 
 0000 1110 ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ
 
-### PUSH #16, 0x10
-Push a value onto stack and increment SP
 
-0001 0000 Z ddd   
 
-### POP #17, 0x11
-Returns value from stack and decrements SP
+
+### PUSH (#16, 0x10) and POP (#17, 0x11)
+Registers are encoded using a bit mask. R0 is the LSB and R15 is MSB in the 16 bit R mask.
+
+Push a value onto stack from a register.
+Pop a value off the stack and into a register.
+
+The stack is a empty ascending stack, this means the SP is always pointing to an empty value and SP - 4 is the top of stack
+
+0001 0000 ZZZZ ZZZZ RRRR RRRR RRRR RRRR   
+
+
+
+
