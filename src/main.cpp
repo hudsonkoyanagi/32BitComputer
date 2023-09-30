@@ -4,7 +4,6 @@
 #include <iostream>
 
 
-class RenderWindow;
 
 int main() {
     // 400 byte console map
@@ -21,7 +20,7 @@ int main() {
 
 
     int CYCLES = 4;
-    bool DEBUG = true; // change to macro def or move to settings
+    bool DEBUG = true; // change to macro def or move to settings?
 
     for(int i = 0; i < CYCLES; i++) {
         if(DEBUG) {
@@ -32,13 +31,5 @@ int main() {
         cpu.execute(mem, DEBUG);
         if(DEBUG) std::cout << "\n";
     }
-
-    uint32_t a = 0b11111111111111111111111111111111;
-    if(kutils::is_MSb(a)){
-        std::cout << "YPYO\n";
-    }
-
-
-
     return 0;
 }

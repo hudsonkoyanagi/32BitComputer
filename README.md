@@ -130,6 +130,11 @@ The stack is a empty ascending stack, this means the SP is always pointing to an
 
 0001 0000 ZZZZ ZZZZ RRRR RRRR RRRR RRRR   
 
+0001 0001 ZZZZ ZZZZ RRRR RRRR RRRR RRRR
+
+### PSLR (#18, 0x12) 
+Push link register onto the stack.
+0001 0010 ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ
 
 
 

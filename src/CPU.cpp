@@ -265,16 +265,18 @@ void CPU::execute(Memory& mem, bool debug) {
             for(int reg : regToPop) {
                 SP -= 4;  // empty ascending stack
                 registers[reg] = mem[SP];
-
             }
         }
         case INS_PUSH: {
             std::vector<int> regToPush = extractRegistersFromBitmask((HalfWord)IR);
             for(int reg : regToPush) {
-
                 mem.storeWord(SP, registers[reg]);
                 SP += 4; // empty ascending stack
             }
+        }
+        case INS_PSLR: {
+            mem.storeWord(SP, LR);
+            SP += 4; // empty ascending stack
         }
         default:
             std::cout << "Unknown instruction: " << std::hex << opCode << "\n";
