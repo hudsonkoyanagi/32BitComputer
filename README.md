@@ -81,6 +81,7 @@ Variants:
   00000 1100 0 ddd tttt Z sss ZZZZ ZZZZ ZZZZ
 * STR Rd, Rs, #off16
   00000 1100 1 ddd tttt Z sss iiii iiii iiii
+___
 ## Control Flow
 
 ### JMP #13, 0x0D
@@ -118,8 +119,8 @@ Return from subroutine by jumping to address in JR (does not clear JR)
 0000 1110 ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ
 
 
-
-
+___
+## Stack
 ### PUSH (#16, 0x10) and POP (#17, 0x11)
 Registers are encoded using a bit mask. R0 is the LSB and R15 is MSB in the 16 bit R mask.
 
@@ -136,5 +137,10 @@ The stack is a empty ascending stack, this means the SP is always pointing to an
 Push link register onto the stack.
 0001 0010 ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ
 
+(could be combined into normal PUSH/POP, plenty of empty space)
+
+### PPLR (#19, 0x13) 
+Pop the current stack value in the LR.
+0001 0011 ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ
 
 

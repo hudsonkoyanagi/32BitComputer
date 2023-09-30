@@ -265,6 +265,7 @@ void CPU::execute(Memory& mem, bool debug) {
             for(int reg : regToPop) {
                 SP -= 4;  // empty ascending stack
                 registers[reg] = mem[SP];
+                mem[SP]
             }
         }
         case INS_PUSH: {
@@ -277,6 +278,10 @@ void CPU::execute(Memory& mem, bool debug) {
         case INS_PSLR: {
             mem.storeWord(SP, LR);
             SP += 4; // empty ascending stack
+        }
+        case INS_PPLR: {
+            SP -= 4;
+            LR = mem[SP];
         }
         default:
             std::cout << "Unknown instruction: " << std::hex << opCode << "\n";

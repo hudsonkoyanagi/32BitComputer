@@ -28,5 +28,6 @@ static constexpr Byte INS_RET = 0x0E;
 static constexpr Byte INS_PUSH = 0x10;
 static constexpr Byte INS_POP = 0x11;
 static constexpr Byte INS_PSLR = 0x12;
+static constexpr Byte INS_PPLR = 0x13;
 
 #endif //INC_32BITCOMPUTER_OPCODES_H
