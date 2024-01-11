@@ -6,8 +6,8 @@
 #define INC_32BITCOMPUTER_MEMORY_H
 #include "definitions.h"
 #include "settings.h"
-// Wrapper for a MEM_SIZE byte array with helper functions
 
+// Wrapper for a MEM_SIZE byte array with helper functions
 class Memory {
 public:
 

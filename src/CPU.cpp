@@ -187,9 +187,9 @@ void CPU::execute(Memory& mem, bool debug) {
 
     switch(opCode){
         case INS_MOV: {
-            const Byte fun = kutils::instrToByte(IR, MOV_FUN_MASK, 23);
+            const Byte func = kutils::instrToByte(IR, MOV_FUN_MASK, 23);
             const Byte rgd = kutils::instrToByte(IR, MOV_RGD_MASK, 20);
-            if (fun == 0) {
+            if (func == 0) {
                 const Byte rgs = kutils::instrToByte(IR, MOV_RGS_MASK, 16);
                 registers[rgd] = registers[rgs];
             } else {
@@ -227,34 +227,43 @@ void CPU::execute(Memory& mem, bool debug) {
             }
             break;
         }
-        // TODO: implement conditional jmps
+        // TODO: implement conditional jumps
         case INS_JMP: {
+
+            bool do_jump = true;
 
             const Byte link = kutils::instrToByte(IR, JMP_LNK_MASK, 23);
             const Byte rgd = kutils::instrToByte(IR, JMP_RGD_MASK, 20);
             const Word offset = kutils::instrToWord(IR, JMP_OFF_MASK);
             const Byte fun = kutils::instrToByte(IR, JMP_FUN_MASK, 19);
             const Byte cond = kutils::instrToByte(IR, JMP_CND_MASK, 12);
-            switch(cond) {
-                case(0): {
+            switch (cond) {
+                case (0): {
                     break;
                 }
-                case(1): {
+                case (1): {
+                    do_jump = Z;
+                    break;
+                }
+                case (2): {
+                    do_jump = !Z;
+                    break;
+                } case (3): {
 
+                    break;
                 }
             }
 
-            if(link) {
-                LR = PC;
+            if (link && do_jump) {
+                // Set LR to following instruction
+                LR = PC + 4;
             }
-            if(fun == 0) {
+            if (fun == 0 && do_jump) {
                 PC = registers[rgd];
-            } else if(fun == 1) {
-                PC = registers[rgd] + offset;
-            } else{
-                printf("Not valid JMP function %d: \n", fun);
-                exit(EXIT_FAILURE); // check if this causes memory leak
+            } else if (fun == 1 && do_jump) {
+                PC = registers[rgd] + (int)offset;
             }
+
         }
         case INS_RET: {
             PC = LR;
@@ -265,7 +274,6 @@ void CPU::execute(Memory& mem, bool debug) {
             for(int reg : regToPop) {
                 SP -= 4;  // empty ascending stack
                 registers[reg] = mem[SP];
-                mem[SP]
             }
         }
         case INS_PUSH: {
@@ -283,6 +291,17 @@ void CPU::execute(Memory& mem, bool debug) {
             SP -= 4;
             LR = mem[SP];
         }
+        case INS_CMP: {
+            uint8_t reg1 = kutils::instrToByte(IR, CMP_R1_MASK, 20);
+            uint8_t reg2 = kutils::instrToByte(IR, CMP_R2_MASK, 16);
+            int result = (int)registers[reg1] - (int)registers[reg2];
+            // TODO: check working
+            this->V = kutils::overflow(reg1, reg2, result);
+            this->C = kutils::carry(reg1, reg2, result);
+            this->N = result < 0;
+            this->Z = result == 0;
+        }
+
         default:
             std::cout << "Unknown instruction: " << std::hex << opCode << "\n";
             break;

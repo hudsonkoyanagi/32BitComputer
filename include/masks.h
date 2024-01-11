@@ -40,4 +40,8 @@ const Word ALU_RS2_MASK = 0x00007000;
 const Word ALU_I16_MASK = 0x0000FFFF;
 const Word ALU_I12_MASK = 0x00000FFF;
 
+const Word CMP_R1_MASK  = 0x00700000;
+const Word CMP_R2_MASK  = 0x00070000;
+
+
 #endif //INC_32BITCOMPUTER_MASKS_H

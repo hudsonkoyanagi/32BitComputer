@@ -20,8 +20,6 @@ public:
     Registers registers;
 
 private:
-
-
     Word PC;
     Word SP;
     Word IR;

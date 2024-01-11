@@ -60,11 +60,15 @@ Variants:
 * MOV Rd, imm20  
   0000 1010 1 ddd iiii iiii iiii iiii iiii
 
+CMV
+1111 0000 0 ddd Z sss COND ZZZZ ZZZ ZZZZ
+1111 0000 1 ddd ZZZZ  COND ZZZZ iiii iiii
+
 ### LDR #11, 0x0B
 Load data from memory into register.  
-Register indirect only
+(Register indirect addressing only)
 Data Types:
-* (W)ord 32bits
+* (W)ord 32bits (default)
 * (B)yte 8bits
 * (H)half word 16 bits
 
@@ -85,7 +89,8 @@ ___
 ## Control Flow
 
 ### JMP #13, 0x0D
-Set PC to specified address with option to set LR to current PC.  
+Set PC to specified address with option to set LR to current PC + 4 (i.e. link). 
+Signed 12 bit immediate offset to register value also available.
 Variants:
 * JMP{L} Rd  
   0000 1101 L ddd 0 ZZZ COND ZZZZ ZZZZ zZZZZ
@@ -95,11 +100,11 @@ Variants:
 Conditions (COND):
 * 0000: JMP  
   *Direct Flag Checks*:
-* 0001: JZE : Z = 1
+* 0001: JZ : Z = 1
 * 0010: JNZ : Z = 0
-* 0011: JNS : N = 1
-* 0100: JCS : C = 1
-* 0101: JVS : V = 1
+* 0011: JN : N = 1
+* 0100: JC : C = 1
+* 0101: JV : V = 1
 * 0110:
 * 0111:   
   *Signed*:
@@ -114,7 +119,7 @@ Conditions (COND):
 * 1111: JLE : C = 0 OR Z = 1
 
 ### RET #14, 0x0E
-Return from subroutine by jumping to address in JR (does not clear JR)
+Return from subroutine by jumping to address in LR (does not clear LR)
 
 0000 1110 ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ
 
@@ -123,7 +128,8 @@ ___
 ## Stack
 ### PUSH (#16, 0x10) and POP (#17, 0x11)
 Registers are encoded using a bit mask. R0 is the LSB and R15 is MSB in the 16 bit R mask.
-
+example:
+  PUSH {R1-R10} => 0000 0011 1111 1111
 Push a value onto stack from a register.
 Pop a value off the stack and into a register.
 
@@ -143,4 +149,22 @@ Push link register onto the stack.
 Pop the current stack value in the LR.
 0001 0011 ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ ZZZZ
 
+### CMP (#20, 0x14)
+Sets flags based on the result of the signed subtraction of R1 - R2
+0001 0100 Z111 Z222 0000 0000 0000 0000
 
+
+
+TODOS:
+- Add jump by signed offset
+- Compare instr
+- Signed ALU ops
+- 64 bit mult and div
+- floating point ops
+- ROM with start up code??
+- addressing modes?
+  - how much mem to use?
+- IO:
+  - keyboard
+  - terminal
+  - 

@@ -29,5 +29,6 @@ static constexpr Byte INS_PUSH = 0x10;
 static constexpr Byte INS_POP = 0x11;
 static constexpr Byte INS_PSLR = 0x12;
 static constexpr Byte INS_PPLR = 0x13;
+static constexpr Byte INS_CMP = 0x14;
 
 #endif //INC_32BITCOMPUTER_OPCODES_H
