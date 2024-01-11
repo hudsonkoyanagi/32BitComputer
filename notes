@@ -1,0 +1,37 @@
+Formats:
+
+
+<alu_op> $1, $2
+<alu_op> $1, $2, $3
+<alu_op> $1, imm_hex_dec_bin_16
+<alu_op> $1, $2, imm_hex_dec_bin_12
+
+<alu_op>s $1, $2
+<alu_op>s $1, $2, $3
+<alu_op>s $1, imm_hex_dec_bin_16
+<alu_op>s $1, $2, imm_hex_dec_bin_12
+
+mov $3, $2
+mov $3, imm_hex_dec_bin
+
+ldr $1, $2
+ldr $1, $2, imm_hex_dec_bin_12
+
+ldrw $1, $2
+ldrw $1, $2, imm_hex_dec_bin_12
+
+ldrh $1, $2
+ldrh $1, $2, imm_hex_dec_bin_12
+
+ldrb $1, $2
+ldrb $1, $2, imm_hex_dec_bin_12
+
+str $1, $2
+str $
+
+MAI:
+
+   Can handle invalid memory access
+   Protects CPU areas such as stack
+   Routes memory mapped IO access
+        Perhaps larger transfers for IO
